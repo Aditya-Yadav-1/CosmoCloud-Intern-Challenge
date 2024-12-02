@@ -4,8 +4,7 @@ from pymongo.collection import Collection
 from bson import ObjectId
 from db.connection import client
 
-# DB_NAME = os.environ.get("DB_NAME")
-DB_NAME = "db1"
+DB_NAME = os.environ.get("DB_NAME")
 
 database = client[DB_NAME]
 students_collection: Collection = database["students"]
