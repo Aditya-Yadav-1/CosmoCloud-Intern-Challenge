@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Query, Response, status
 from models.student import Student, StudentUpdate
 from services.student_service import (
     create_student_service,
@@ -23,10 +24,13 @@ async def create_student(student: Student):
         )
 
 @router.get("/students")
-async def get_students(country: str = None, age: int = None):
+async def list_students(
+    country: Optional[str] = Query(None, description="Filter students by country"),
+    age: Optional[int] = Query(None, description="Filter students by minimum age (inclusive)")
+):
     try:
         students = list_students_service(country=country, age=age)
-        return students
+        return {"data": students}
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -34,7 +38,7 @@ async def get_students(country: str = None, age: int = None):
         )
 
 @router.get("/students/{student_id}")
-async def get_student(student_id: str):
+async def fetch_student(student_id: str):
     if not ObjectId.is_valid(student_id):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -49,7 +53,7 @@ async def get_student(student_id: str):
     return student
 
 @router.patch("/students/{student_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def patch_student(student_id: str, student_update: StudentUpdate):
+async def update_student(student_id: str, student_update: StudentUpdate):
     if not ObjectId.is_valid(student_id):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -77,4 +81,4 @@ async def delete_student(student_id: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Student not found"
         )
-    return {"message": "Student deleted successfully"}
+    return Response(status_code=status.HTTP_200_OK)
